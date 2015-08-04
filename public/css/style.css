@@ -1,9 +1,55 @@
-html, body{
-    margin:0, padding:0;
+body {
+    position: relative;
+    background-color: black;
+    color: #ffffff;
 }
-.container{
-    position:absolute;
-    width: 512px;
-    left:50%;
-    margin-left:-256px;
+svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.handle {
+  fill: none;
+  pointer-events: all;
+  stroke: #fff;
+  stroke-width: 1px;
+  cursor: move;
+}
+#h0 {
+    position: absolute;
+    top:700px;
+    left:52px;
+}
+#h1 {
+    position: absolute;
+    top:700px;
+    left:461px;
+}
+#h2 {
+    position: absolute;
+    top:700px;
+    left:870px;
+}
+#face {
+    position: absolute;
+    top: 50;
+    right: 100;
+    transform: scale(-1, 1);
+}
+
+#menu {
+    position: absolute;
+    top:10px;
+    left: 37%;
+    color: #ffffff;
+    font-family: monospace;
+    font-size:11px;
+    text-align:center;
+    z-index:2;
+}
+
+a {
+    text-decoration: underline;
+    cursor: pointer;
+    color: #ffffff;
 }
