@@ -1,0 +1,214 @@
+<html>
+<head>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="js/d3.min.js"></script>
+    <script src="js/numeric-solve.min.js"></script>
+    <!-- polyfill -->
+    <script src="js/shim/Base64.js" type="text/javascript"></script>
+    <script src="js/shim/Base64binary.js" type="text/javascript"></script>
+    <script src="js/shim/WebAudioAPI.js" type="text/javascript"></script>
+	<script src="js/shim/WebMIDIAPI.js" type="text/javascript"></script>
+    <!-- jasmid package -->
+    <script src="js/jasmid/stream.js"></script>
+    <script src="js/jasmid/midifile.js"></script>
+    <script src="js/jasmid/replayer_new.js"></script>
+    <!-- midi.js package -->
+    <script src="js/midi/audioDetect.js" type="text/javascript"></script>
+    <script src="js/midi/gm.js" type="text/javascript"></script>
+    <script src="js/midi/loader.js" type="text/javascript"></script>
+    <script src="js/midi/plugin.audiotag.js" type="text/javascript"></script>
+    <script src="js/midi/plugin.webaudio.js" type="text/javascript"></script>
+    <script src="js/midi/plugin.webmidi.js" type="text/javascript"></script>
+    <script src="js/midi/player.js" type="text/javascript"></script>
+    <script src="js/midi/synesthesia.js" type="text/javascript"></script>
+
+    <script>
+        var videoHandsWidth = 1230;
+        var videoHandsHeight = 170;
+        var tileWidth = videoHandsWidth/3;
+        var tileHeight = videoHandsHeight;
+
+        var margin = {top: 700, right: 50, bottom: 50, left: 50},
+        width = tileWidth;//1280 - margin.left - margin.right,
+        height = tileHeight;//720 - margin.top - margin.bottom;
+
+        var sourcePoints = [[0, 0], [0, height], [width, 0], [width, height],
+                            [width, 0], [width, height], [2*width, 0], [2*width, height],
+                            [2*width, 0], [2*width, height], [3*width, 0], [3*width, height]];
+        var targetPoints = [[0, 0], [0, height], [width, 0], [width, height],
+                            [width, 0], [width, height], [2*width, 0], [2*width, height],
+                            [2*width, 0], [2*width, height], [3*width, 0], [3*width, height]];
+
+        function getSquare(points, index) {
+            var start = index * 4;
+            var result = [];
+            result.push(points[start]);
+            result.push(points[start + 2]);
+            result.push(points[start + 3]);
+            result.push(points[start + 1]);
+            console.log(result);
+            return result;
+        }
+
+        var video, copyHandsCanvas, copyHands, copyFace;
+        var HANDS_ORIGIN = {x: 40, y: 0};
+        var FACE_ORIGIN = {x: 0, y: 175};
+        var h0, h1, h2;
+
+        function init() {
+            video = document.getElementById('video');
+            copyHandsCanvas = document.getElementById("copyhands");
+            copyHands = copyHandsCanvas.getContext('2d');
+            h0 = document.getElementById('h0').getContext('2d');
+            h1 = document.getElementById('h1').getContext('2d');
+            h2 = document.getElementById('h2').getContext('2d');
+            copyFace = document.getElementById("copyface").getContext('2d');
+
+            initMidi();
+
+            toggleControls();
+            loop();
+        }
+
+
+        var player;
+        function initMidi() {
+            MIDI.loadPlugin({
+                soundfontUrl: "soundfont/",
+                instrument: "acoustic_grand_piano",
+                onprogress: function(state, progress) {
+                    console.log(state, progress);
+                },
+                onsuccess: function() {
+                    player = MIDI.Player;
+                    player.timeWarp = 1;
+                    player.loadFile("data/satie.mid");
+                }
+            });
+        }
+
+        function loop() {
+            copyHands.drawImage(video, HANDS_ORIGIN.x, HANDS_ORIGIN.y, videoHandsWidth, videoHandsHeight, 0, 0, videoHandsWidth, videoHandsHeight);
+            h0.drawImage(copyHandsCanvas, 0, 0, tileWidth, tileHeight, 0, 0, tileWidth, tileHeight);
+            h1.drawImage(copyHandsCanvas, tileWidth, 0, tileWidth, tileHeight, 0, 0, tileWidth, tileHeight);
+            h2.drawImage(copyHandsCanvas, tileWidth*2, 0, tileWidth, tileHeight, 0, 0, tileWidth, tileHeight);
+
+            copyFace.drawImage(video, FACE_ORIGIN.x, FACE_ORIGIN.y, 1280, 720, 0, 0, 1280, 720);
+            requestAnimationFrame(loop);
+        }
+
+        function stop() {
+            video.pause();
+            video.currentTime = 0;
+            player.stop();
+        }
+
+        function play() {
+            player.start();
+            setTimeout(function() {
+                video.play();
+            }, 400);
+        }
+
+        function pause() {
+            player.pause();
+            video.pause();
+            var midiTime = player.getCurrentTime()/1000;
+            var diff = midiTime - video.currentTime;
+            video.currentTime += diff;
+        }
+    </script>
+</head>
+
+<body onload="init();">
+    <div id="menu">
+        <a onclick="play();">Play</a> |
+        <a onclick="pause();">Pause</a> |
+        <a onclick="stop();">Stop</a> |
+        <a onclick='toggleControls()'>Toggle Control Points</a>
+    </div>
+
+    <div style="display:none">
+        <video id="video" loop="false">
+            <source src="data/satie.mov" type="video/mp4">
+        </video>
+        <canvas id="copyhands" width="1280" height="200"></canvas>
+    </div>
+
+
+    <div id= "face"><canvas id="copyface" width="1280" height="720"></canvas></div>
+    <div id = "transform">
+        <div id="h0tr"><canvas id="h0" width="438" height="370"></canvas></div>
+        <div id="h1tr"><canvas id="h1" width="438" height="370"></canvas></div>
+        <div id="h2tr"><canvas id="h2" width="438" height="370"></canvas></div>
+    </div>
+
+    <script>
+    var transform = ["", "-webkit-", "-moz-", "-ms-", "-o-"].reduce(function(p, v) { return v + "transform" in document.body.style ? v : p; }) + "transform";
+
+    d3.select("body").selectAll("svg")
+    .data(["flat"])
+    .enter().append("svg")
+    .attr("id", function(d) { return d; })
+    .attr("width", 1500)
+    .attr("height", 1000)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    var svgTransform = d3.select("#transform")
+    .style(transform + "-origin", margin.left + "px " + margin.top + "px 0");
+
+    var svgFlat = d3.select("#flat");
+    function toggleControls() {
+        if (svgFlat.attr("visibility") == "hidden")
+        svgFlat.attr("visibility", "visible");
+        else
+        svgFlat.attr("visibility", "hidden");
+    }
+
+    d3.select("h0").style("top", "700px");
+
+    var h0Transform = d3.select("#h0tr").style(transform + "-origin", margin.left + "px " + margin.top + "px 0");
+    var h1Transform = d3.select("#h1tr").style(transform + "-origin", margin.left + "px " + margin.top + "px 0");
+    var h2Transform = d3.select("#h2tr").style(transform + "-origin", margin.left + "px " + margin.top + "px 0");
+
+    var handle = svgFlat.select("g").selectAll(".handle")
+    .data(targetPoints)
+    .enter().append("circle")
+    .attr("class", "handle")
+    .attr("transform", function(d) { return "translate(" + d + ")"; })
+    .attr("r", 7)
+    .call(d3.behavior.drag()
+    .origin(function(d) { return {x: d[0], y: d[1]}; })
+    .on("drag", dragged));
+
+    function dragged(d) {
+        d3.select(this).attr("transform", "translate(" + (d[0] = d3.event.x) + "," + (d[1] = d3.event.y) + ")");
+        transformed(getSquare(sourcePoints, 0), getSquare(targetPoints, 0), h0Transform);
+        transformed(getSquare(sourcePoints, 1), getSquare(targetPoints, 1), h1Transform);
+        transformed(getSquare(sourcePoints, 2), getSquare(targetPoints, 2), h2Transform);
+    }
+
+    function transformed(s_pts, t_pts, tile) {
+        for (var a = [], b = [], i = 0, n = s_pts.length; i < n; ++i) {
+            var s = s_pts[i], t = t_pts[i];
+            a.push([s[0], s[1], 1, 0, 0, 0, -s[0] * t[0], -s[1] * t[0]]), b.push(t[0]);
+            a.push([0, 0, 0, s[0], s[1], 1, -s[0] * t[1], -s[1] * t[1]]), b.push(t[1]);
+        }
+
+        var X = solve(a, b, true), matrix = [
+            X[0], X[3], 0, X[6],
+            X[1], X[4], 0, X[7],
+            0,    0, 1,    0,
+            X[2], X[5], 0,    1
+        ].map(function(x) {
+            return d3.round(x, 6);
+        });
+
+        tile.style(transform, "matrix3d(" + matrix + ")");
+    }
+
+    </script>
+
+</body>
+
+</html>
