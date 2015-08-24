@@ -1,45 +1,62 @@
 body {
-    position: relative;
+    position: fixed;
     background-color: black;
     color: #ffffff;
 }
 svg {
-  position: absolute;
-  top: 0;
+  position: fixed;
+  top:  0;
   left: 0;
 }
 .handle {
+  position: fixed;
   fill: none;
   pointer-events: all;
   stroke: #fff;
   stroke-width: 1px;
   cursor: move;
 }
+.cpoints {
+  position: absolute;
+  pointer-events:all;
+  visibilit: visible;
+  stroke:none;
+}
 #h0 {
-    position: absolute;
-    top:700px;
+    position: fixed;
+    top:550px;
     left:52px;
 }
 #h1 {
-    position: absolute;
-    top:700px;
+    position: fixed;
+    top:550px;
     left:461px;
 }
 #h2 {
-    position: absolute;
-    top:700px;
-    left:870px;
+    position: fixed;
+    top:550px;
+    left:870;
+}
+#h0tr {
+    transform:matrix3d(0.579077, 0.011409, 0, 0.000012, -0.560555, 1.017635, 0, -0.001203, 0, 0, 1, 0, 42, -68, 0, 1);
+}
+#h1tr {
+    transform:matrix3d(0.557595, 0.01353, 0, -0.000027, -0.532245, 0.985875, 0, -0.001125, 0, 0, 1, 0, 45.293012, -63.888333, 0, 1);
+}
+#h2tr {
+    transform:matrix3d(0.513563, 0.019171, 0, -0.000066, -0.496704, 0.950651, 0, -0.001075, 0, 0, 1, 0, 63.352925, -65.871023, 0, 1);
 }
 #face {
-    position: absolute;
-    top: 50;
-    right: 100;
-    transform: scale(-1, 1);
+    position: fixed;
+    top: -100;
+    right: -70;
+    transform: scale(-0.4, 0.4)
 }
 
 #menu {
-    position: absolute;
-    top:10px;
+    visibility: hidden;
+    position: fixed;
+    top:140px;
     left: 37%;
     color: #ffffff;
     font-family: monospace;
