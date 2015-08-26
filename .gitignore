@@ -1,5 +1,6 @@
 #large files
 *.mov
+*.psd
 
 # Logs
 logs

@@ -9,13 +9,18 @@ var staticRoot = path.join(__dirname+'/public/');
 app.use(express.static('public'));
 
 //Routes
+app.get('/andante', function(req, res){
+    res.sendFile(staticRoot+"/Andante/andante.html");
+});
+
 app.get('/mf', function(req, res){
-    res.sendFile(staticRoot+"fugue.html");
+    res.sendFile(staticRoot+"/MirrorFugue/fugue.html");
 });
 
 app.get('/remote', function(req, res){
-    res.sendFile(staticRoot+"remote.html");
+    res.sendFile(staticRoot+"/MirrorFugue/remote.html");
 });
+
 
 //WS Server
 io.on('connection', function (socket) {

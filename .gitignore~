@@ -1,5 +1,5 @@
 #large files
-.mov
+*.mov
 
 # Logs
 logs
