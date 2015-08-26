@@ -1,0 +1,36 @@
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, maximum-scale=1, minimum-scale=1" />
+    <style>
+        body {
+            position: fixed;
+            background-color: #dddddd;
+            font-family: monospace;
+            font-size: 64;
+        }
+        div {
+            position:relative;
+            left: 10px; top: 30px;
+            padding: 25px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="play" onclick="sendMsg('play')">PLAY</div>
+    <div id="pause" onclick="sendMsg('pause')">PAUSE</div>
+    <div id="stop" onclick="sendMsg('stop')">STOP</div>
+
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+    var socket = io();
+
+    function sendMsg(msg) {
+        socket.emit('control', msg);
+    }
+
+    </script>
+
+</body>
+</html>
