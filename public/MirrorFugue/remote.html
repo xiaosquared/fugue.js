@@ -75,8 +75,10 @@
         });
 
         $.getJSON("./data/mf_assets/entries.json", function(data) {
+            console.log(data);
             $.each(data, function(key, val) {
                 $.each(val.songs, function(skey, sval) {
+                    console.log('sval', sval);
                     $("#nav").append("<li data-name='"+ sval.fileId +"'>" +displayInfo(val.artist, sval.title) + "</li>");
                 });
             });
