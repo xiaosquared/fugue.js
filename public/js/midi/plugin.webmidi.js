@@ -163,6 +163,7 @@
 			}
 			if (output === undefined) { // nothing there...
 				disklavier = false;
+
 				errFunction();
 			} else {
 				opts.onsuccess && opts.onsuccess();

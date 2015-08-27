@@ -23,11 +23,15 @@ app.get('/remote', function(req, res){
 
 
 //WS Server
-io.on('connection', function (socket) {
+io.on('connection', function(socket) {
   socket.emit('news', { hello: 'world' });
-  socket.on('control', function (msg) {
-    console.log(msg);
+  socket.on('control', function(msg) {
+    console.log('control', msg);
     io.emit('control', msg);
+  });
+  socket.on('song', function(msg) {
+      console.log('song', msg);
+     io.emit('song', msg);
   });
 });
 

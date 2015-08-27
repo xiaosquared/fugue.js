@@ -4,7 +4,7 @@
 	----------------------------------------------------------
 	https://github.com/mudcube/MIDI.js
 	----------------------------------------------------------
-	Inspired by javax.sound.midi (albeit a super simple version): 
+	Inspired by javax.sound.midi (albeit a super simple version):
 		http://docs.oracle.com/javase/6/docs/api/javax/sound/midi/package-summary.html
 	----------------------------------------------------------
 	Technologies
@@ -163,6 +163,7 @@ MIDI.Player = MIDI.Player || {};
 	var sendRequest = function(instrumentId, audioFormat, onprogress, onsuccess, onerror) {
 		var soundfontPath = root.soundfontUrl + instrumentId + '-' + audioFormat + '.js';
 		if (root.USE_XHR) {
+			console.log("root util", root.util);
 			root.util.request({
 				url: soundfontPath,
 				format: 'text',
