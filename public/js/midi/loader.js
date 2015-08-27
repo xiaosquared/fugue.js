@@ -163,7 +163,6 @@ MIDI.Player = MIDI.Player || {};
 	var sendRequest = function(instrumentId, audioFormat, onprogress, onsuccess, onerror) {
 		var soundfontPath = root.soundfontUrl + instrumentId + '-' + audioFormat + '.js';
 		if (root.USE_XHR) {
-			console.log("root util", root.util);
 			root.util.request({
 				url: soundfontPath,
 				format: 'text',

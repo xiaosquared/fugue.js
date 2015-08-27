@@ -292,13 +292,13 @@
     });
 
     socket.on('song', function(msg) {
+        console.log('received song msg ' + msg);
         var vid = d3.select("#videofile").attr("src", getFilePath(msg, ".mov"));
         video.load();
         player.loadFile(getFilePath(msg, ".mid"));
     });
 
-    function getFilePath(fileId, ext) {
-        console.log('getting');
+    function getFilePath(fileId, ext) {;
         return "./data/mf_assets/" + fileId + ext;
     }
 

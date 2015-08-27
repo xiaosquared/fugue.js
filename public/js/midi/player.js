@@ -152,7 +152,7 @@ midi.loadMidiFile = function(onsuccess, onprogress, onerror) {
 };
 
 midi.loadFile = function(file, onsuccess, onprogress, onerror) {
-    console.log("MidiPlayer.loadFile");
+    console.log("MidiPlayer.loadFile", file);
 	midi.stop();
 	if (file.indexOf('base64,') !== -1) {
 		var data = window.atob(file.split(',')[1]);
