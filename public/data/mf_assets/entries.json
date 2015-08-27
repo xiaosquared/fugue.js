@@ -1,0 +1,48 @@
+[
+    {
+        "id": 0,
+        "artist": "Xiao Xiao",
+        "songs": [
+            {
+                "title": "Gnosienne #1",
+                "composer": "Eric Satie",
+                "improvised": false,
+                "fileId": "satie",
+                "calibrationId" : 1
+            }
+        ]
+    },
+    {
+        "id": 1,
+        "artist": "Marvin Minsky",
+        "songs": [
+            {
+                "title": "Invention",
+                "composer": "Marvin Minsky",
+                "improvised": true,
+                "fileId": "marvin",
+                "calibrationId" : 1
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "artist": "Donal Fox",
+        "songs": [
+            {
+                "title": "Ugly Beauty",
+                "composer": "Donal Fox",
+                "improvised": true,
+                "fileId": "ub",
+                "calibrationId" : 1
+            },
+            {
+                "title": "Autumn Leaves",
+                "composer": "Donal Fox",
+                "improvised": true,
+                "fileId": "autumn",
+                "calibrationId" : 1
+            }
+        ]
+    }
+]
