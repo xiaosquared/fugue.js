@@ -33,6 +33,10 @@ io.on('connection', function(socket) {
       console.log('song', msg);
      io.emit('song', msg);
   });
+  socket.on('mode', function(msg) {
+      console.log('mode', msg);
+      io.emit('mode', msg);
+  });
 });
 
 server.listen(3000,function(){

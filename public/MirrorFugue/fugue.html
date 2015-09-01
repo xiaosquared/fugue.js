@@ -38,13 +38,40 @@
         var margin = {top: 550, right: 50, bottom: 50, left: 50},
         width = tileWidth;//1280 - margin.left - margin.right,
         height = tileHeight;//720 - margin.top - margin.bottom;
-
         var sourcePoints = [[0, 0], [0, height], [width, 0], [width, height],
                             [width, 0], [width, height], [2*width, 0], [2*width, height],
                             [2*width, 0], [2*width, height], [3*width, 0], [3*width, height]];
+        var targetPoints = sourcePoints.slice();
         var targetPoints = [[0, 0], [0, height], [width, 0], [width, height],
                             [width, 0], [width, height], [2*width, 0], [2*width, height],
                             [2*width, 0], [2*width, height], [3*width, 0], [3*width, height]];
+
+         var tWidths = [378, 396, 460];
+         var sourcePoints = [[ 0, 0 ],
+                            [ 0, height ],
+                            [ tWidths[0], 0 ],
+                            [ tWidths[0], height ],
+                            [ tWidths[0], 0 ],
+                            [ tWidths[0], height ],
+                            [ tWidths[0] + tWidths[1], 0 ],
+                            [ tWidths[0] + tWidths[1], height ],
+                            [ tWidths[0] + tWidths[1], 0],
+                            [ tWidths[0] + tWidths[1], height ],
+                            [ tWidths[0] + tWidths[1] + tWidths[2], 0 ],
+                            [ tWidths[0] + tWidths[1] + tWidths[2], height] ];
+        var targetPoints = [[ 0, 0 ],
+                            [ 0, height ],
+                            [ tWidths[0], 0 ],
+                            [ tWidths[0], height ],
+                            [ tWidths[0], 0 ],
+                            [ tWidths[0], height ],
+                            [ tWidths[0] + tWidths[1], 0 ],
+                            [ tWidths[0] + tWidths[1], height ],
+                            [ tWidths[0] + tWidths[1], 0],
+                            [ tWidths[0] + tWidths[1], height ],
+                            [ tWidths[0] + tWidths[1] + tWidths[2], 0 ],
+                            [ tWidths[0] + tWidths[1] + tWidths[2], height] ];
+
 
         var cmargin = {top: 200, left: 500};
         var cwidth = 40;
@@ -80,7 +107,8 @@
 
             initMidi();
 
-            toggleControls();
+        //    toggleControls();
+            setView('piano');
             loop();
         }
 
@@ -90,21 +118,32 @@
                 soundfontUrl: "soundfont/",
                 instrument: "acoustic_grand_piano",
                 onprogress: function(state, progress) {
-                    console.log(state, progress);
+                    //console.log(state, progress);
                 },
                 onsuccess: function() {
                     player = MIDI.Player;
                     player.timeWarp = 1;
                     player.loadFile("data/mf_assets/satie.mid");
+
+                    // get something to happen every time a note plays
+                    player.addListener(function(data) {
+                        if (MIDI.disklavier()) {
+                            setTimeout(function() {
+                                lightKeys(data.note, data.velocity, data.message);
+                            }, 400);
+                        } else
+                            lightKeys(data.note, data.velocity, data.message);
+                    });
                 }
             });
         }
 
         function loop() {
             copyHands.drawImage(video, HANDS_ORIGIN.x, HANDS_ORIGIN.y, videoHandsWidth, videoHandsHeight, 0, 0, videoHandsWidth, videoHandsHeight);
-            h0.drawImage(copyHandsCanvas, 0, 0, tileWidth, tileHeight, 0, 0, tileWidth, tileHeight);
-            h1.drawImage(copyHandsCanvas, tileWidth, 0, tileWidth, tileHeight, 0, 0, tileWidth, tileHeight);
-            h2.drawImage(copyHandsCanvas, tileWidth*2, 0, tileWidth, tileHeight, 0, 0, tileWidth, tileHeight);
+            h0.drawImage(copyHandsCanvas, 0, 0, tWidths[0], tileHeight, 0, 0, tWidths[0], tileHeight);
+            h1.drawImage(copyHandsCanvas, tWidths[0], 0, tWidths[1], tileHeight, 0, 0, tWidths[1], tileHeight);
+            h2.drawImage(copyHandsCanvas, tWidths[0] + tWidths[1], 0, tWidths[2], tileHeight, 0, 0, tWidths[2], tileHeight);
+            drawLights();
 
             copyFace.drawImage(video, FACE_ORIGIN.x, FACE_ORIGIN.y, 1280, 720, 0, 0, 1280, 720);
             requestAnimationFrame(loop);
@@ -116,7 +155,10 @@
             player.stop();
         }
 
+        var videoMIDIOffset = 400;
         function play() {
+            // TODO: return if it's already playing!
+
             player.start();
 
             if (!MIDI.disklavier())
@@ -124,7 +166,7 @@
             else {
                 setTimeout(function() {
                     video.play();
-                }, 400);
+                }, videoMIDIOffset);
             }
         }
 
@@ -147,7 +189,7 @@
     </div>
 
     <div style="display:none">
-        <video id="video" loop="false">
+        <video id="video">
             <source id="videofile" src="data/mf_assets/satie.mov" type="video/mp4">
         </video>
         <canvas id="copyhands" width="1280" height="200"></canvas>
@@ -156,9 +198,9 @@
 
     <div id= "face"><canvas id="copyface" width="1280" height="720"></canvas></div>
     <div id = "transform">
-        <div id="h0tr"><canvas id="h0" width="438" height="370"></canvas></div>
-        <div id="h1tr"><canvas id="h1" width="438" height="370"></canvas></div>
-        <div id="h2tr"><canvas id="h2" width="438" height="370"></canvas></div>
+        <div id="h0tr"><canvas id="h0" width="378" height="370"></canvas></div>
+        <div id="h1tr"><canvas id="h1" width="396" height="370"></canvas></div>
+        <div id="h2tr"><canvas id="h2" width="460" height="370"></canvas></div>
     </div>
 
     <script>
@@ -178,13 +220,14 @@
 
     var svgFlat = d3.select("#flat");
     function toggleControls() {
-        if (svgFlat.attr("visibility") == "hidden")
-        svgFlat.attr("visibility", "visible");
-        else
-        svgFlat.attr("visibility", "hidden");
+        if (handle.style("visibility") == "hidden") {
+            handle.style("visibility", "visible");
+            calibration.style("visibility", "visible");
+        } else {
+            handle.style("visibility", "hidden");
+            calibration.style("visibility", "hidden");
+        }
     }
-
-    d3.select("h0").style("top", "700px");
 
     var h0Transform = d3.select("#h0tr").style(transform + "-origin", margin.left + "px " + margin.top + "px 0");
     var h1Transform = d3.select("#h1tr").style(transform + "-origin", margin.left + "px " + margin.top + "px 0");
@@ -227,6 +270,10 @@
         tile.style(transform, "matrix3d(" + matrix + ")");
     }
 
+    ////////////////////////
+    /* Calibration points */
+    ////////////////////////
+
     var calibration = svgFlat.append("g")
                     .attr("transform", "translate(" + cmargin.left + "," + cmargin.top + ")")
     .selectAll(".cpoints")
@@ -241,14 +288,12 @@
 
     var cpointSelected;
     function clicked(d) {
-        console.log("hi");
         d3.selectAll(".cpoints").attr("fill", "#fff");
         d3.select(this).attr("fill", "red");
         cpointSelected = d3.select(this).attr("id").split("-")[1];
     }
-
-
     window.addEventListener('keypress', function (e) {
+        console.log('calibrating');
         var selected = d3.select("#t-"+cpointSelected);
         if (!selected)
             return;
@@ -273,6 +318,182 @@
         transformed(getSquare(sourcePoints, 2), getSquare(targetPoints, 2), h2Transform);
     }, false);
 
+    /////////////////////////////
+    /* MIDI lightup indicators */
+    /////////////////////////////
+
+    var keyLights = {
+        notesOn : [],
+        color: "red",
+        alpha: 0.2,
+        left: margin.left + 25,
+        top: margin.top + 10,
+        offset: 10,
+
+        keyWidth: 13.7,
+        bWidth: 12,
+        wWidth: 22.5,
+        tHeight: 100,
+        bHeight: 50,
+
+        set0: 27, // goes over tile0
+        set1: 56,  // goes over tile1
+
+        keyType : function(i) {
+            var blackKeys = [1, 4, 6, 9, 11];
+            var whiteLeft = [2, 7];
+            var whiteMid = [0, 5, 10];
+            var whiteRight = [3, 8];
+
+            if (i == 0)
+                return 'whiteRight';
+            else if (i == 87)
+                return 'topKey'
+            else {
+                i = i % 12;
+                if (whiteLeft.indexOf(i) >=0 )
+                    return 'whiteLeft';
+                else if (whiteMid.indexOf(i) >= 0)
+                    return 'whiteMid';
+                else if (whiteRight.indexOf(i) >= 0)
+                    return 'whiteRight';
+                else
+                    return 'black';
+            }
+        }
+
+    };
+
+    var canvases = [makeCanvas(0, 378, 370), makeCanvas(1, 396, 370), makeCanvas(2, 460, 370)];
+    function makeCanvas(id, width, height) {
+        var context = d3.select('#h' + id + 'tr').append('canvas')
+                        .attr('id', 'kl' + id)
+                        .attr('width', width)
+                        .attr('height', height)
+                        .node().getContext('2d');
+        return context;
+    }
+
+    var detachedContainer = document.createElement('custom');
+    var dataContainer = d3.select(detachedContainer);
+
+    function drawCustom(data) { // give this keyLights.data
+        var dataBinding = dataContainer.selectAll('custom.rect')
+            .data(data, function(d) {return d;});
+
+        dataBinding
+            .transition()
+            .duration(100)
+            .attr("alpha", keyLights.alpha)
+            .attr("fillStyle", keyLights.color);
+
+        dataBinding.enter()
+            .append("custom")
+            .classed("rect", true)
+            .attr("x", function(d) { return (d * keyLights.keyWidth) + keyLights.offset; })
+            .attr("y", 0)
+            .attr("alpha", keyLights.alpha)
+            .attr("fillStyle", keyLights.color);
+
+        dataBinding.exit()
+            .transition()
+            .duration(100)
+            .attr("alpha", 0)
+            .attr("fillStyle", "#fff");
+    }
+
+    function drawLights() {
+        canvases.forEach(drawCanvas);
+    }
+    function drawCanvas(context, id) {
+        context.clearRect(0, 0, 400, 400);
+
+        var elements = dataContainer.selectAll("custom.rect");
+        elements.each(function(d, i) {
+            if (id == 0) {
+                if (d > keyLights.set0)
+                    return;
+            } else if (id == 1) {
+                if ((d < keyLights.set0) || (d > keyLights.set1))
+                    return;
+            } else if (id == 2) {
+                if (d < keyLights.set1)
+                    return;
+            }
+
+            var node = d3.select(this);
+            var x = node.attr("x") - getOffset(id);
+            context.beginPath();
+                context.fillStyle = node.attr("fillStyle");
+                context.globalAlpha = node.attr("alpha");
+
+                context.rect(x, node.attr("y"), keyLights.bWidth, keyLights.tHeight);
+                switch(keyLights.keyType(d)) {
+                    case 'whiteLeft':
+                        context.rect(x - keyLights.wWidth + keyLights.bWidth, keyLights.tHeight, keyLights.wWidth, keyLights.bHeight);
+                        break;
+                    case 'whiteMid':
+                        context.rect(x - (keyLights.wWidth - keyLights.bWidth)/2, keyLights.tHeight, keyLights.wWidth, keyLights.bHeight);
+                        break;
+                    case 'whiteRight':
+                        context.rect(x, keyLights.tHeight, keyLights.wWidth, keyLights.bHeight);
+                        break;
+                    case 'topKey':
+                        context.rect(x + keyLights.bWidth, node.attr("y"), keyLights.wWidth - keyLights.bWidth, keyLights.tHeight);
+                        context.rect(x, keyLights.tHeight, keyLights.wWidth, keyLights.bHeight);
+                        break;
+                }
+            context.fill();
+            context.closePath();
+        });
+
+        function getOffset(id) {
+            if (id == 0)
+                return 0;
+            if (id == 1)
+                return (keyLights.set0 + 0.75) * keyLights.keyWidth ;
+            if (id == 2)
+                return (keyLights.set1 + 0.75) * keyLights.keyWidth;
+        }
+    }
+
+    function lightKeys(note, vel, msg) { // TODO: take velocity into account
+        var index = keyLights.notesOn.indexOf(note - 21);
+        if (msg == 144) {
+            if (index < 0)
+                keyLights.notesOn.push(note - 21);
+        }
+        else if (msg = 128) {
+            if (index >= 0)
+                keyLights.notesOn.splice(index, 1);
+        }
+        drawCustom(keyLights.notesOn);
+    }
+
+
+    /* Toggle between screen mode and piano mode */
+
+    function setView(type) {
+        var m0, m1, m2;
+        if (type == 'piano') {
+            d3.select('#face').attr("top", 100)
+                                .attr("right", -70)
+                                .style(transform, "scale(-0.4, 0.4)");
+            m0 = "matrix3d(0.579077, 0.011409, 0, 0.000012, -0.560555, 1.017635, 0, -0.001203, 0, 0, 1, 0, 42, -68, 0, 1)";
+            m1 = "matrix3d(0.557595, 0.01353, 0, -0.000027, -0.532245, 0.985875, 0, -0.001125, 0, 0, 1, 0, 45.293012, -63.888333, 0, 1)";
+            m2 = "matrix3d(0.513563, 0.019171, 0, -0.000066, -0.496704, 0.950651, 0, -0.001075, 0, 0, 1, 0, 63.352925, -65.871023, 0, 1)";
+        }
+        else if (type == 'screen') {
+            d3.select('#face').attr("top", -50)
+                                .attr("right", 100)
+                                .style(transform, "scale(-0.6, 0.6)");
+            m0 = m1 = m2 = "scale(1, 1)";
+        }
+        d3.select('#h0tr').style(transform, m0);
+        d3.select("#h1tr").style(transform, m1);
+        d3.select('#h2tr').style(transform, m2);
+    }
+
 
     /* dealing with remote */
 
@@ -296,6 +517,11 @@
         var vid = d3.select("#videofile").attr("src", getFilePath(msg, ".mov"));
         video.load();
         player.loadFile(getFilePath(msg, ".mid"));
+    });
+
+    socket.on('mode', function(msg) {
+        console.log("received mode msg " + msg);
+        setView(msg);
     });
 
     function getFilePath(fileId, ext) {;
