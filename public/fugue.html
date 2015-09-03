@@ -132,18 +132,21 @@
                                 lightKeys(data.note, data.velocity, data.message);
                             }, 400);
                         } else
-                            lightKeys(data.note, data.velocity, data.message);
+                        lightKeys(data.note, data.velocity, data.message);
                     });
                 }
             });
         }
 
+        var drawLights = true;
         function loop() {
             copyHands.drawImage(video, HANDS_ORIGIN.x, HANDS_ORIGIN.y, videoHandsWidth, videoHandsHeight, 0, 0, videoHandsWidth, videoHandsHeight);
+
             h0.drawImage(copyHandsCanvas, 0, 0, tWidths[0], tileHeight, 0, 0, tWidths[0], tileHeight);
             h1.drawImage(copyHandsCanvas, tWidths[0], 0, tWidths[1], tileHeight, 0, 0, tWidths[1], tileHeight);
             h2.drawImage(copyHandsCanvas, tWidths[0] + tWidths[1], 0, tWidths[2], tileHeight, 0, 0, tWidths[2], tileHeight);
-            drawLights();
+
+            drawKeyLights();
 
             copyFace.drawImage(video, FACE_ORIGIN.x, FACE_ORIGIN.y, 1280, 720, 0, 0, 1280, 720);
             requestAnimationFrame(loop);
@@ -331,7 +334,8 @@
         offset: 10,
 
         keyWidth: 13.7,
-        bWidth: 12,
+        tWidth: 12,
+        btWidth: 24,
         wWidth: 22.5,
         tHeight: 100,
         bHeight: 50,
@@ -402,7 +406,7 @@
             .attr("fillStyle", "#fff");
     }
 
-    function drawLights() {
+    function drawKeyLights() {
         canvases.forEach(drawCanvas);
     }
     function drawCanvas(context, id) {
@@ -425,21 +429,33 @@
             var x = node.attr("x") - getOffset(id);
             context.beginPath();
                 context.fillStyle = node.attr("fillStyle");
-                context.globalAlpha = node.attr("alpha");
 
-                context.rect(x, node.attr("y"), keyLights.bWidth, keyLights.tHeight);
-                switch(keyLights.keyType(d)) {
+                if (drawLights)
+                    context.globalAlpha = node.attr("alpha");
+                else
+                    context.globalAlpha = 0;
+
+                // draw the top part. slightly wider if black to be visible
+                var type = keyLights.keyType(d);
+                if (type == 'black')
+                    context.rect(x - (keyLights.btWidth - keyLights.tWidth)/2,
+                        node.attr("y"), keyLights.btWidth, keyLights.tHeight + (keyLights.btWidth - keyLights.tWidth)/2);
+                else
+                    context.rect(x, node.attr("y"), keyLights.tWidth, keyLights.tHeight);
+
+                // draw the bottom part based on diff types of white keys
+                switch(type) {
                     case 'whiteLeft':
-                        context.rect(x - keyLights.wWidth + keyLights.bWidth, keyLights.tHeight, keyLights.wWidth, keyLights.bHeight);
+                        context.rect(x - keyLights.wWidth + keyLights.tWidth, keyLights.tHeight, keyLights.wWidth, keyLights.bHeight);
                         break;
                     case 'whiteMid':
-                        context.rect(x - (keyLights.wWidth - keyLights.bWidth)/2, keyLights.tHeight, keyLights.wWidth, keyLights.bHeight);
+                        context.rect(x - (keyLights.wWidth - keyLights.tWidth)/2, keyLights.tHeight, keyLights.wWidth, keyLights.bHeight);
                         break;
                     case 'whiteRight':
                         context.rect(x, keyLights.tHeight, keyLights.wWidth, keyLights.bHeight);
                         break;
                     case 'topKey':
-                        context.rect(x + keyLights.bWidth, node.attr("y"), keyLights.wWidth - keyLights.bWidth, keyLights.tHeight);
+                        context.rect(x + keyLights.tWidth, node.attr("y"), keyLights.wWidth - keyLights.tWidth, keyLights.tHeight);
                         context.rect(x, keyLights.tHeight, keyLights.wWidth, keyLights.bHeight);
                         break;
                 }
@@ -470,8 +486,9 @@
         drawCustom(keyLights.notesOn);
     }
 
-
+    ///////////////////////////////////////////////
     /* Toggle between screen mode and piano mode */
+    ///////////////////////////////////////////////
 
     function setView(type) {
         var m0, m1, m2;
@@ -494,8 +511,9 @@
         d3.select('#h2tr').style(transform, m2);
     }
 
-
+    /////////////////////////
     /* dealing with remote */
+    /////////////////////////
 
     var socket = io();
 
@@ -522,6 +540,12 @@
     socket.on('mode', function(msg) {
         console.log("received mode msg " + msg);
         setView(msg);
+    });
+
+
+    socket.on('lights', function(msg) {
+        drawLights = !drawLights;
+        console.log("received lights toggle msg " + drawLights);
     });
 
     function getFilePath(fileId, ext) {;

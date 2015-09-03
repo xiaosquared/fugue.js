@@ -21,7 +21,6 @@ app.get('/remote', function(req, res){
     res.sendFile(staticRoot+"remote.html");
 });
 
-
 //WS Server
 io.on('connection', function(socket) {
   socket.emit('news', { hello: 'world' });
@@ -37,6 +36,10 @@ io.on('connection', function(socket) {
       console.log('mode', msg);
       io.emit('mode', msg);
   });
+  socket.on('lights', function() {
+      console.log('lights toggle');
+      io.emit('lights');
+  })
 });
 
 server.listen(3000,function(){
