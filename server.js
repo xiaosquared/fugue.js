@@ -10,15 +10,15 @@ app.use(express.static('public'));
 
 //Routes
 app.get('/andante', function(req, res){
-    res.sendFile(staticRoot+"/Andante/andante.html");
+    res.sendFile(staticRoot+"andante.html");
 });
 
 app.get('/mf', function(req, res){
-    res.sendFile(staticRoot+"/MirrorFugue/fugue.html");
+    res.sendFile(staticRoot+"fugue.html");
 });
 
 app.get('/remote', function(req, res){
-    res.sendFile(staticRoot+"/MirrorFugue/remote.html");
+    res.sendFile(staticRoot+"remote.html");
 });
 
 
