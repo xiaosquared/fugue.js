@@ -1,0 +1,116 @@
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, maximum-scale=1, minimum-scale=1" />
+    <style>
+        body {
+            background-color: #dddddd;
+            font-family: monospace;
+            font-size: 20;
+        }
+        div {
+            padding: 20px;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        ul {
+            width: 100%;
+        }
+        li {
+            width: 33%;
+            float: left;
+            border-right: 1px solid #eee;
+            padding: 4% 10%;
+        }
+        li:last-child {
+            border-right:none;
+        }
+
+        @media screen and (max-width: 768px) {
+            #menu {
+                width:1.4em;
+                display: block;
+                background: #ddd;
+                font-size:1.35em;
+                text-align:center;
+            }
+            #nav.js {
+                display: none;
+            }
+            ul {
+                width:100%;
+                list-style: none;
+                z-index: 999;
+            }
+            li {
+                width:100%;
+                border-right: none;
+            }
+        }
+        @media screen and (min-width: 768px) {
+            #menu {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <ul id="nav"></ul>
+    <div id="play" onclick="sendCtrl('play')">PLAY</div>
+    <div id="pause" onclick="sendCtrl('pause')">PAUSE</div>
+    <div id="stop" onclick="sendCtrl('stop')">STOP</div>
+    <div id="pianoMode" onclick="sendMode('piano')">Piano view</div>
+    <div id="screenMode" onclick="sendMode('screen')">Screen view</div>
+
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+    var socket = io();
+
+    $(document).ready(function() {
+        $('#nav').addClass('js');
+        $('#nav').addClass('js').before('<div id="menu">☰</div>');
+        $('#menu').click(function() {
+            $('#nav').toggle();
+        });
+
+        $.getJSON("./data/mf_assets/entries.json", function(data) {
+            console.log(data);
+            $.each(data, function(key, val) {
+                $.each(val.songs, function(skey, sval) {
+                    console.log('sval', sval);
+                    $("#nav").append("<li data-name='"+ sval.fileId +"'>" +displayInfo(val.artist, sval.title) + "</li>");
+                });
+            });
+        });
+
+        $('ul').on('click', 'li',function() {
+            sendSong($(this).data('name'));
+        });
+    });
+
+    function displayInfo(artist, song) {
+        return artist + ", " + song;
+    }
+
+    function sendSong(msg) {
+        socket.emit('song', msg);
+    }
+
+    function sendCtrl(msg) {
+        socket.emit('control', msg);
+    }
+
+    function sendMode(msg) {
+        socket.emit('mode', msg);
+    }
+
+    // Learned how to make a disappearing mobile menu from here:
+    // http://blog.teamtreehouse.com/how-to-build-a-three-line-drop-down-menu-for-a-responsive-website-in-jquery
+
+    </script>
+
+</body>
+</html>
