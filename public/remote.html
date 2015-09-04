@@ -65,6 +65,10 @@
     <div id="screenMode" onclick="sendMode('screen')">Screen view</div>
     <div id="toggleLights" onclick="sendLights()">Toggle lights</div>
 
+    <div id="speed0" onclick="sendSpeed(0.5)">0.5 Speed</div>
+    <div id="speed0" onclick="sendSpeed(0.75)">0.75 Speed</div>
+    <div id="speed0" onclick="sendSpeed(1)">1 Speed</div>
+
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
@@ -110,6 +114,10 @@
 
     function sendLights() {
         socket.emit('lights');
+    }
+
+    function sendSpeed(msg) {
+        socket.emit('speed', msg);
     }
 
     // Learned how to make a disappearing mobile menu from here:

@@ -26,7 +26,6 @@
     <script src="js/util/dom_request_script.js" type="text/javascript"></script>
     <!-- for remote control -->
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
-    <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
 
         // displaying video
@@ -113,6 +112,7 @@
         }
 
         var player;
+        var midiURL = "data/mf_assets/satie.mid";
         function initMidi() {
             MIDI.loadPlugin({
                 soundfontUrl: "soundfont/",
@@ -122,6 +122,7 @@
                 },
                 onsuccess: function() {
                     player = MIDI.Player;
+                    MIDI.setVolume(0, 0, 0); // get rid of ugly webaudio sound (but keep MIDI triggers)
                     player.timeWarp = 1;
                     player.loadFile("data/mf_assets/satie.mid");
 
@@ -160,7 +161,8 @@
 
         var videoMIDIOffset = 400;
         function play() {
-            // TODO: return if it's already playing!
+            if (!video.paused)
+                return;
 
             player.start();
 
@@ -180,6 +182,21 @@
             var diff = midiTime - video.currentTime;
             video.currentTime += diff;
         }
+
+        function setSpeed(speed) {
+            player.pause();
+            video.pause();
+
+            video.playbackRate = speed;
+            player.timeWarp = 1/speed;
+            player.loadFile(midiURL);
+
+            if (speed == 1)
+                video.muted = false;
+            else
+                video.muted = true;
+        }
+
     </script>
 </head>
 
@@ -199,8 +216,8 @@
     </div>
 
 
-    <div id= "face"><canvas id="copyface" width="1280" height="720"></canvas></div>
     <div id = "transform">
+        <div id= "face"><canvas id="copyface" width="1280" height="720"></canvas></div>
         <div id="h0tr"><canvas id="h0" width="378" height="370"></canvas></div>
         <div id="h1tr"><canvas id="h1" width="396" height="370"></canvas></div>
         <div id="h2tr"><canvas id="h2" width="460" height="370"></canvas></div>
@@ -328,17 +345,17 @@
     var keyLights = {
         notesOn : [],
         color: "red",
-        alpha: 0.2,
+        alpha: 0.35,
         left: margin.left + 25,
         top: margin.top + 10,
         offset: 10,
 
         keyWidth: 13.7,
         tWidth: 12,
-        btWidth: 24,
+        btWidth: 22,
         wWidth: 22.5,
         tHeight: 100,
-        bHeight: 50,
+        bHeight: 70,
 
         set0: 27, // goes over tile0
         set1: 56,  // goes over tile1
@@ -387,7 +404,7 @@
 
         dataBinding
             .transition()
-            .duration(100)
+            .duration(50)
             .attr("alpha", keyLights.alpha)
             .attr("fillStyle", keyLights.color);
 
@@ -401,7 +418,7 @@
 
         dataBinding.exit()
             .transition()
-            .duration(100)
+            .duration(50)
             .attr("alpha", 0)
             .attr("fillStyle", "#fff");
     }
@@ -439,7 +456,7 @@
                 var type = keyLights.keyType(d);
                 if (type == 'black')
                     context.rect(x - (keyLights.btWidth - keyLights.tWidth)/2,
-                        node.attr("y"), keyLights.btWidth, keyLights.tHeight + (keyLights.btWidth - keyLights.tWidth)/2);
+                        node.attr("y"), keyLights.btWidth, keyLights.tHeight + 12);
                 else
                     context.rect(x, node.attr("y"), keyLights.tWidth, keyLights.tHeight);
 
@@ -493,16 +510,16 @@
     function setView(type) {
         var m0, m1, m2;
         if (type == 'piano') {
-            d3.select('#face').attr("top", 100)
-                                .attr("right", -70)
+            d3.select('#face').style("top", "-100px")
+                                .style("right", "-90px")
                                 .style(transform, "scale(-0.4, 0.4)");
             m0 = "matrix3d(0.579077, 0.011409, 0, 0.000012, -0.560555, 1.017635, 0, -0.001203, 0, 0, 1, 0, 42, -68, 0, 1)";
             m1 = "matrix3d(0.557595, 0.01353, 0, -0.000027, -0.532245, 0.985875, 0, -0.001125, 0, 0, 1, 0, 45.293012, -63.888333, 0, 1)";
             m2 = "matrix3d(0.513563, 0.019171, 0, -0.000066, -0.496704, 0.950651, 0, -0.001075, 0, 0, 1, 0, 63.352925, -65.871023, 0, 1)";
         }
         else if (type == 'screen') {
-            d3.select('#face').attr("top", -50)
-                                .attr("right", 100)
+            d3.select('#face').style("top", "-50px")
+                                .style("right", "90px")
                                 .style(transform, "scale(-0.6, 0.6)");
             m0 = m1 = m2 = "scale(1, 1)";
         }
@@ -534,7 +551,10 @@
         console.log('received song msg ' + msg);
         var vid = d3.select("#videofile").attr("src", getFilePath(msg, ".mov"));
         video.load();
-        player.loadFile(getFilePath(msg, ".mid"));
+
+        midiURL = getFilePath(msg, ".mid");
+        player.timeWarp = 1;
+        player.loadFile(midiURL);
     });
 
     socket.on('mode', function(msg) {
@@ -548,10 +568,19 @@
         console.log("received lights toggle msg " + drawLights);
     });
 
+    socket.on('speed', function(msg) {
+        var speed = parseFloat(msg);
+        console.log("received speed msg ", speed)
+        setSpeed(speed);
+    });
+
+    ////////////////////
+    // Helper Methods //
+    ////////////////////
+
     function getFilePath(fileId, ext) {;
         return "./data/mf_assets/" + fileId + ext;
     }
-
     /* JSON */
     // d3.json("./data/mf_assets/entries.json", function(error, json) {
     //         if (error)

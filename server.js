@@ -39,6 +39,10 @@ io.on('connection', function(socket) {
   socket.on('lights', function() {
       console.log('lights toggle');
       io.emit('lights');
+  });
+  socket.on('speed', function(msg) {
+      console.log('speed', msg);
+      io.emit('speed', msg);
   })
 });
 

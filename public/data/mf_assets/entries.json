@@ -13,19 +13,6 @@
         ]
     },
     {
-        "id": 1,
-        "artist": "Marvin Minsky",
-        "songs": [
-            {
-                "title": "Invention",
-                "composer": "Marvin Minsky",
-                "improvised": true,
-                "fileId": "marvin",
-                "calibrationId" : 1
-            }
-        ]
-    },
-    {
         "id": 2,
         "artist": "Donal Fox",
         "songs": [
@@ -37,10 +24,10 @@
                 "calibrationId" : 1
             },
             {
-                "title": "Autumn Leaves",
+                "title": "Finale",
                 "composer": "Donal Fox",
-                "improvised": true,
-                "fileId": "autumn",
+                "improvised": false,
+                "fileId": "finale",
                 "calibrationId" : 1
             }
         ]
