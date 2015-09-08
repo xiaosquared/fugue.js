@@ -113,6 +113,7 @@
 
         var player;
         var midiURL = "data/mf_assets/satie.mid";
+        //var recordingMIDI = false;
         function initMidi() {
             MIDI.loadPlugin({
                 soundfontUrl: "soundfont/",
@@ -125,6 +126,29 @@
                     MIDI.setVolume(0, 0, 0); // get rid of ugly webaudio sound (but keep MIDI triggers)
                     player.timeWarp = 1;
                     player.loadFile("data/mf_assets/satie.mid");
+
+
+                    var midiInput = MIDI.getInput().value;
+                    if (midiInput) {
+                        midiInput.onmidimessage = function(event) {
+                            var data = event.data,
+                            cmd = data[0] >> 4,
+                            channel = data[0] & 0xf,
+                            type = data[0] & 0xf0,
+                            note = data[1],
+                            vel = data[2];
+                            var time = event.timeStamp;
+
+                            switch(type) {  // triggers when we receive MIDI messages. doesn't do much for now.
+                                case 144:
+                                    console.log("Note on " + note + " velocity " + vel + " time " + time);
+                                    break;
+                                case 128:
+                                    console.log("Note off " + note + " velocity " + vel + " time " + time);
+                                    break;
+                            }
+                        }
+                    }
 
                     // get something to happen every time a note plays
                     player.addListener(function(data) {
@@ -141,6 +165,7 @@
 
         var drawLights = true;
         function loop() {
+
             copyHands.drawImage(video, HANDS_ORIGIN.x, HANDS_ORIGIN.y, videoHandsWidth, videoHandsHeight, 0, 0, videoHandsWidth, videoHandsHeight);
 
             h0.drawImage(copyHandsCanvas, 0, 0, tWidths[0], tileHeight, 0, 0, tWidths[0], tileHeight);
@@ -572,6 +597,11 @@
         var speed = parseFloat(msg);
         console.log("received speed msg ", speed)
         setSpeed(speed);
+    });
+
+    socket.on('record', function(msg) {
+        console.log("received record msg", msg);
+
     });
 
     ////////////////////

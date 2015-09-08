@@ -11,6 +11,7 @@
 
 	var plugin = null;
 	var output = null;
+	var input = null;
 	var channels = [];
 	var midi = root.WebMIDI = {api: 'webmidi'};
 
@@ -137,6 +138,10 @@
 		return disklavier;
 	}
 
+	midi.getInput = function() {
+		return input;
+	}
+
 	midi.connect = function(opts) {
 		root.setDefaultPlugin(midi);
 		var errFunction = function(err) { // well at least we tried!
@@ -160,10 +165,10 @@
 				output = pluginOutputs.values().next().value;
 				if (output)
 					disklavier = true;
+				input = plugin.inputs.values().next();
 			}
 			if (output === undefined) { // nothing there...
 				disklavier = false;
-
 				errFunction();
 			} else {
 				opts.onsuccess && opts.onsuccess();

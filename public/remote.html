@@ -69,10 +69,13 @@
     <div id="speed0" onclick="sendSpeed(0.75)">0.75 Speed</div>
     <div id="speed0" onclick="sendSpeed(1)">1 Speed</div>
 
+    <div id="record" onclick="record()">Record</div>
+
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
     var socket = io();
+    var recordbutton = $('#record');
 
     $(document).ready(function() {
         $('#nav').addClass('js');
@@ -118,6 +121,18 @@
 
     function sendSpeed(msg) {
         socket.emit('speed', msg);
+    }
+
+    function record() {
+        if (recordbutton.text() == 'Record') {
+            console.log("Recording");
+            socket.emit('record', 'start');
+            recordbutton.text('Stop Recording');
+        } else if (recordbutton.text() == 'Stop Recording') {
+            console.log("End Record");
+            socket.emit('record', 'stop');
+            recordbutton.text('Record');
+        }
     }
 
     // Learned how to make a disappearing mobile menu from here:
